@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Radar Montagna</title>
+    <title>Porcinus®</title>
     <style>
         body {
             margin: 0;
@@ -18,10 +18,20 @@
             font-family: Arial, sans-serif;
             text-align: center;
         }
+        #logo-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        #logo {
+            width: 100px;
+            height: auto;
+            margin-bottom: 10px;
+        }
         #title {
             font-size: 20px;
             font-weight: bold;
-            margin-bottom: 20px;
             text-transform: uppercase;
             opacity: 0;
         }
@@ -35,7 +45,7 @@
             height: 300px;
         }
         svg {
-            position: center;
+            position: absolute;
             width: 100%;
             height: 100%;
         }
@@ -74,7 +84,10 @@
     </style>
 </head>
 <body>
-    <div id="title">Sto scansionando la zona per rilevare la presenza di funghi...</div>
+    <div id="logo-container">
+        <img id="logo" src="logoporcinus.png" alt="Logo">
+        <div id="title">Sto scansionando la zona per rilevare la presenza di funghi...</div>
+    </div>
     <div id="radar-container">
         <svg viewBox="0 0 100 100">
             <circle cx="50" cy="50" r="48" stroke="lime" stroke-width="2" fill="none" />
@@ -87,6 +100,12 @@
         </svg>
     </div>
     <button id="start-button">Inizia scansione</button>
+    <audio id="radar-sound" loop>
+        <source src="radar-sound.mp3" type="audio/mpeg">
+    </audio>
+    <audio id="detection-sound">
+        <source src="detection-sound.mp3" type="audio/mpeg">
+    </audio>
     <script>
         if (!/Android|iPhone/i.test(navigator.userAgent)) {
             document.body.innerHTML = "<h2>Questo sito è accessibile solo da dispositivi mobili.</h2>";
@@ -96,6 +115,7 @@
             document.querySelector(".sweep").style.opacity = "1";
             document.getElementById("title").style.animation = "blink 1s infinite alternate";
             document.getElementById("title").style.opacity = "1";
+            document.getElementById("radar-sound").play();
             getLocation();
         });
 
@@ -110,13 +130,13 @@
         function success(position) {
             const lat = position.coords.latitude;
             const lng = position.coords.longitude;
-            fetch(`https://maps.googleapis.com/maps/api/elevation/json?locations=${lat},${lng}&key=TUA_API_KEY_GOOGLE`)
+            fetch(`https://maps.googleapis.com/maps/api/elevation/json?locations=${lat},${lng}&key=AIzaSyBuW9z2jtkydeFJ2zDCEOjsANm7SDPXczg`)
                 .then(response => response.json())
                 .then(data => {
                     if (data.results && data.results.length > 0) {
                         const elevation = data.results[0].elevation;
                         console.log("Altitudine:", elevation);
-                        if (elevation > 600) { // Consideriamo montagna sopra i 600m
+                        if (elevation > 600) {
                             setInterval(generateDot, 3000);
                         }
                     }
@@ -135,6 +155,7 @@
             dot.style.left = `${Math.random() * 300}px`;
             dot.style.top = `${Math.random() * 300}px`;
             radar.appendChild(dot);
+            document.getElementById("detection-sound").play();
             setTimeout(() => dot.remove(), 5000);
         }
     </script>
