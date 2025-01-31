@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Radar Montagna</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background: black;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        canvas {
+            width: 100vw;
+            height: 100vh;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="radarCanvas"></canvas>
+    <script>
+        if (!/Android|iPhone/i.test(navigator.userAgent)) {
+            document.body.innerHTML = "<h2>Questo sito è accessibile solo da dispositivi mobili.</h2>";
+        } else {
+            const canvas = document.getElementById("radarCanvas");
+            const ctx = canvas.getContext("2d");
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            
+            function drawRadar() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.fillStyle = "rgba(0, 255, 0, 0.2)";
+                ctx.beginPath();
+                ctx.arc(canvas.width / 2, canvas.height / 2, 100, 0, Math.PI * 2);
+                ctx.fill();
+                requestAnimationFrame(drawRadar);
+            }
+            
+            function addRandomDots() {
+                navigator.geolocation.getCurrentPosition(async (position) => {
+                    const { latitude, longitude } = position.coords;
+                    const elevation = await getElevation(latitude, longitude);
+                    if (elevation > 500) { // Soglia per considerare "montagna"
+                        ctx.fillStyle = "red";
+                        ctx.beginPath();
+                        ctx.arc(
+                            canvas.width / 2 + (Math.random() * 100 - 50),
+                            canvas.height / 2 + (Math.random() * 100 - 50),
+                            5, 0, Math.PI * 2
+                        );
+                        ctx.fill();
+                    }
+                });
+            }
+            
+            async function getElevation(lat, lon) {
+                const apiKey = "TUA_API_KEY_GOOGLE";
+                const url = `https://maps.googleapis.com/maps/api/elevation/json?locations=${lat},${lon}&key=${apiKey}`;
+                const response = await fetch(url);
+                const data = await response.json();
+                return data.results[0]?.elevation || 0;
+            }
+            
+            drawRadar();
+            setInterval(addRandomDots, 5000);
+        }
+    </script>
+</body>
+</html>
